@@ -4,7 +4,7 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup'
 import Button from 'react-bootstrap/Button'
 
 class SteakBot extends Component {
-  state = { 
+  state = {
     meat:0,
     cook:-1
   }
@@ -24,8 +24,8 @@ class SteakBot extends Component {
     fetch(fetch_url);
   };
 
-  render() { 
-    return ( 
+  render() {
+    return (
       <React.Fragment>
         <Carousel interval={null} onSlid={this.handleMeat}>
           <Carousel.Item>
@@ -72,5 +72,5 @@ class SteakBot extends Component {
      );
   }
 }
- 
+
 export default SteakBot;
