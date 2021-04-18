@@ -120,7 +120,7 @@ def getCookTimes(thickness, cook):
         second_time = 0.139 * thickness + 0.53
     if cook == 2:
         first_time = 0.15 * thickness + 2.01
-        second_time = 0.169 * thickness 0.0179
+        second_time = 0.169 * thickness - 0.0179
     if cook == 3:
         first_time = 0.172 * thickness + 2.45
         second_time = 0.187 * thickness + 0.423
@@ -172,7 +172,7 @@ def main():
             flip.start()
             turn2 = threading.Timer(first_time + second_time/2.0 - delta_time, turnSteak)
             turn2.start()
-            finish = threading.Timer(first_time + second_time = delta_time, finishSteak)
+            finish = threading.Timer(first_time + second_time - delta_time, finishSteak)
             finish.start()
 
             while(True):
