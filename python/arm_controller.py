@@ -6,6 +6,7 @@ import time
 import os
 import threading
 from scipy.spatial.transform import Rotation as R
+import progressbar
 
 from yaml import load, dump
 try:
@@ -13,19 +14,20 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
-BBQ_FRAME = [-0.454, -0.0733, -0.06943, 0.036, 0.054, 3.14159]
-FRIDGE_FRAME = [0,0,0,0,0,0]
+BBQ_FRAME = [-0.43, -0.077, -0.07178, 0.023, 0.001, -3.215]
+RACK_FRAME = [0.4116, 0.1022, 0.1684, 0.013, 0.024, 0.038]
 TCP_FRAME = [-0.125, 0.125, 0.05, 1.76, -0.729, 1.76]
 HOME = [1.5707, -2.0944, 2.0944, 0.0, 1.5707, 2.35619]
 
 STEAK = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-FRONT_POUNCE = [-0.1, 0.0, -0.005, 0.0, 30.0, 0.0]
-FRONT_POUNCE_UP = [-0.1, 0.0, 0.05, 0.0, 30.0, 0.0]
+FRONT_POUNCE = [-0.2, 0.0, -0.005, 0.0, 30.0, 0.0]
+FRONT_POUNCE_UP = [-0.2, 0.0, 0.05, 0.0, 30.0, 0.0]
 UNDER = [0.0, 0.0, -0.005, 0.0, 0.0, 0.0]
 UP = [0.0, 0.0, 0.05, 0.0, 0.0, 0.0]
-TURN = [0.0, 0.0, 0.05, 0.0, 45.0, 90.0]
-TURN_UP = [0.0, 0.0, 0.09, 0.0, 90, 90.0]
+TURN = [0.0, 0.0, 0.05, 0.0, 0.0, 90.0]
+TURN_UP = [0.0, -0.1, 0.09, 0.0, 80, 90.0]
+TURN_UP2 = [-0.1, -0.1, 0.14, 0.0, 90, 90.0]
 RIGHT = [0.0, -0.15, 0.1, -40.0, 0.0, 0.0]
 FLIP = [0.0, -0.08, 0.15, -80.0, 0.0, 0.0]
 
@@ -68,6 +70,20 @@ def measureThickness(rtde_c, rtde_r):
 def getSteak(meat):
     global rtde_c
     rtde_c.moveJ(HOME)
+    rtde_c.moveJ_IK(getPose(rtde_c, RACK_FRAME, FRONT_POUNCE_UP))
+    rtde_c.moveL(getPose(rtde_c, RACK_FRAME, FRONT_POUNCE), 0.25)
+    rtde_c.moveL(getPose(rtde_c, RACK_FRAME, UNDER), 0.25)
+    rtde_c.moveL(getPose(rtde_c, RACK_FRAME, UP), 0.25)
+    rtde_c.moveJ(HOME)
+
+def returnSteak():
+    global rtde_c
+    rtde_c.moveJ(HOME)
+    rtde_c.moveJ_IK(getPose(rtde_c, RACK_FRAME, UP))
+    rtde_c.moveL(getPose(rtde_c, RACK_FRAME, UNDER), 0.25)
+    rtde_c.moveL(getPose(rtde_c, RACK_FRAME, FRONT_POUNCE), 0.25)
+    rtde_c.moveL(getPose(rtde_c, RACK_FRAME, FRONT_POUNCE_UP), 0.25)
+    rtde_c.moveJ(HOME)
 
 def getAxisAngle(pose):
     r = R.from_euler('ZYX', [pose[5], pose[4], pose[3]], degrees=True)
@@ -94,6 +110,7 @@ def turnSteak():
     rtde_c.moveL(getPose(rtde_c, BBQ_FRAME, UP), 0.25)
     rtde_c.moveJ_IK(getPose(rtde_c, BBQ_FRAME, TURN))
     rtde_c.moveL(getPose(rtde_c, BBQ_FRAME, TURN_UP), 0.25)
+    rtde_c.moveL(getPose(rtde_c, BBQ_FRAME, TURN_UP2), 0.25)
     rtde_c.moveJ(HOME)
 
 def flipSteak():
@@ -184,21 +201,25 @@ def main():
 
             if first_time > 0 and second_time > 0:
                 turn1 = threading.Timer(first_time/2.0 - delta_time, turnSteak)
-                #turn1.start()
+                turn1.start()
                 flip = threading.Timer(first_time - delta_time, flipSteak)
-                #flip.start()
+                flip.start()
                 turn2 = threading.Timer(first_time + second_time/2.0 - delta_time, turnSteak)
-                #turn2.start()
+                turn2.start()
                 finish = threading.Timer(first_time + second_time - delta_time, finishSteak)
                 finish.start()
 
+                bar = progressbar.ProgressBar(max_value=1.0)
                 while(True):
                     if turn1.is_alive() or turn2.is_alive() or finish.is_alive() or flip.is_alive():
-                        print(str( int( ( time.time() - place_time ) / ( first_time + second_time ) * 100 ) )  + " %" )
+                        bar.update( min( ( time.time() - place_time ) / ( first_time + second_time ) , 1.0 ) )
                         time.sleep(1)
                     else:
                         print("MmmmMmMMMMMmmm")
                         break
+
+            returnSteak()
+
             else:
                 print("Measurement Error")
 
