@@ -1,4 +1,3 @@
-scipy
 Flask_Cors
+scipy
 Flask
-PyYAML

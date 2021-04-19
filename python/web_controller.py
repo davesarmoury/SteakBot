@@ -19,7 +19,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 def hello_world():
     return 'Hello, World!'
 
-@app.route("/settings")
+@app.route("/go")
 def updateSettings():
     data = {}
     data["meat"] = int(request.args.get("meat"))
@@ -29,7 +29,7 @@ def updateSettings():
     outFile.write(dump(data, Dumper=Dumper))
     outFile.close()
 
-    line = "Received <" + str(data["meat"]) + ", " + str(data["cool"]) + ">"
+    line = "Received <" + str(data["meat"]) + ", " + str(data["cook"]) + ">"
     print(line)
     return line
 

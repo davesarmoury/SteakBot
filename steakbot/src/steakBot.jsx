@@ -67,7 +67,7 @@ class SteakBot extends Component {
           <Button variant="secondary" onClick={() => this.handleCook(4)}>Well</Button>
         </ButtonGroup>
 
-        <Button variant="danger" size="lg">Perfection!</Button>
+        <Button variant="danger" size="lg" onClick={this.goSteakBot}>Perfection!</Button>
       </React.Fragment>
      );
   }
